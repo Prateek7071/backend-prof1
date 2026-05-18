@@ -4,6 +4,7 @@ npm i -D nodemon
 ```
 updated package.json for nodemon by creating a script 
 
-```
+````
 "dev": "nodemon src/index.js"
 ```
+added prettier setting
