@@ -12,7 +12,7 @@ added prettier setting
 
 two approach to connect to db:
 1. write all connection code in index.js so when it loads the func works,
-2. or write the code in a seperate file under db and call it in the index file.
+2. or write the code in a seperate file under db export and import to index and execute it.
 
 ```
 npm i mongoose express dotenv
