@@ -34,3 +34,15 @@ using jwt.io to see
 ```
 npm i jsonwebtoken
 ```
+## strategy for file upload 
+1. use multer to take file from a user and upload it temperorily to our local server
+2. then take that file from local server and upload to cloudinary server
+the reason: cause in production grade this is a common practice, cause in case we need to re attempt to upload file, we dont need to ask user to upload it multiple times.
+
+installed 
+```
+npm i cloudinary
+npm i multer
+```
+using unlink 
+read : https://nodejs.org/api/fs.html
