@@ -1,3 +1,5 @@
+-- [gitignore generator](https://mrkandreev.name/snippets/gitignore-generator/)
+
 installed nodemon as dev dependency so doesnt affect in prod using 
 ```
 npm i -D nodemon
