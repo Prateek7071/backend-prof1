@@ -20,3 +20,17 @@ npm i mongoose express dotenv
 ### things to note when connecting/talking to db:
 1. you'll always encounter some error when connecting to db so use try catch or use promise (as it has resolve reject to handle scenarios)
 2. your db will be on different continent so you'll have to wait . use async 
+
+used mongoose agregator pagination pipeline 
+```
+npm install mongoose-aggregate-paginate-v2
+```
+
+for password hashing
+```
+npm i bcryptjs
+```
+using jwt.io to see
+```
+npm i jsonwebtoken
+```
