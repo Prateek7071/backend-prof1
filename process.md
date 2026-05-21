@@ -48,3 +48,7 @@ npm i multer
 ```
 using unlink 
 read : https://nodejs.org/api/fs.html
+
+created controller and router then tested using postman
+
+POST: http://localhost:8000/api/v1/users/register
