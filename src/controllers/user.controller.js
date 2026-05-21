@@ -35,7 +35,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required")
   }
 
-  const existedUser = User.findOne({
+  const existedUser = User.findOne({ //finds the first entry that exist 
     $or: [{ username }, { email }]
   })
 
@@ -43,8 +43,8 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User already exists ")
   }
   console.log("req.files : ",req.files)
-  const avatarLocalPath = req.files?.avatar[0]?.path
-  const coverImageLocalPath = req.files?.coverImage[0]?.path
+  const avatarLocalPath = req.files?.avatar[0]?.path //multer provides with req.files like how we get req.body
+  const coverImageLocalPath = req.files?.coverImage[0]?.path 
 
   if (!avatarLocalPath) {
     throw new ApiError(400,"avatar file is required")
@@ -60,7 +60,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const user = await User.create({
     fullname,
     avatar: avatar.url,
-    coverImage: coverImage?.url || "",
+    coverImage: coverImage?.url || "", //cause we never checked if they sent or not and also cause it was not necessary so could be null
     email,
     password,
     username: username.toLowerCase()
