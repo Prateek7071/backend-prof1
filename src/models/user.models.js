@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import jwt from JsonWebToken
+import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs";
 
 const userSchema = new Schema({
@@ -11,7 +11,7 @@ const userSchema = new Schema({
     trim: true,
     index: true // good to enable this when you know its gonna get searched a lot
   },
-  username: {
+  email: {
     type: String,
     required: true,
     unique: true,
@@ -56,10 +56,9 @@ const userSchema = new Schema({
 // }) at this state it will always run ex, if say user changed avatar it will update the password to so we want it to only do that when we send pasword field
 
 // pre is used to do something just before the data is saved to db
-userSchema(async function (next) {
-  if(!this.isModified("password")) return next() //need to pass as string, also this is a negative text if not motified move on.
-  this.password = await bcrypt.hash(this.password, 10) //here 10 is the number of rounds
-  next()
+userSchema.pre('save', async function () {
+  if (!this.isModified("password")) return;
+  this.password = await bcrypt.hash(this.password, 10);
 })
 
 userSchema.methods.isPasswordCorrect = async function (password) {
