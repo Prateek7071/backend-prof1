@@ -58,7 +58,7 @@ const userSchema = new Schema({
 // pre is used to do something just before the data is saved to db
 userSchema(async function (next) {
   if(!this.isModified("password")) return next() //need to pass as string, also this is a negative text if not motified move on.
-  this.password = bcrypt.hash(this.password, 10) //here 10 is the number of rounds
+  this.password = await bcrypt.hash(this.password, 10) //here 10 is the number of rounds
   next()
 })
 
