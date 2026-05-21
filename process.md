@@ -52,3 +52,9 @@ read : https://nodejs.org/api/fs.html
 created controller and router then tested using postman
 
 POST: http://localhost:8000/api/v1/users/register
+
+made a change involving using next and async in pre where it changed in new version so cant use them together
+
+configured collection in postman 
+see [postman1]("./process/images/postman1.png")
+see [postman1]("./process/images/postman2.png")
