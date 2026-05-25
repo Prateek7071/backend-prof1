@@ -219,16 +219,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true
     }
   
-    const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user?._id)
+    const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefereshTokens(user?._id)
     // console.log("NAT: ",accessToken)
-    // console.log("NRT: ",refreshToken)
+    console.log("NRT: ",newRefreshToken)
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
+      .cookie("refreshToken", newRefreshToken, options)
       .json( //TODO: fix refresh token not in response
         200,
-        {accessToken,refreshToken},
+        {accessToken,newRefreshToken},
         "Access Token refreshed"
       )
   } catch (error) {
@@ -274,4 +274,24 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(200, req.user, "Current user fetched successfully")
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword }
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  const { fullname, email } = req.body
+  if (!fullname || !email) {
+    throw new ApiError(400, "All fields are required!")
+  }
+  const user = User.findByIdAndUpdate(req.user?._id, {
+    $set: {
+      fullname, //can also do username: username and for email too
+      email
+    }
+  },
+    {
+    returnDocument: 'after'
+    }
+  ).select("-password -refreshToken")
+  // TODO: add other things to update
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Fullname changed successfully"))
+})
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails }
