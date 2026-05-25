@@ -13,6 +13,7 @@ const generateAccessAndRefereshTokens = async (userId)=>{
     const refreshToken = user.generateRefreshToken()
 
     user.refreshToken = refreshToken
+    // console.log("generateART: ",refreshToken)
     await user.save({validateBeforeSave: false})
 
     return {accessToken, refreshToken}
@@ -218,15 +219,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true
     }
   
-    const { accessToken, newRefreshToken } = await generateAccessAndRefereshTokens(user?._id)
-  
+    const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user?._id)
+    // console.log("NAT: ",accessToken)
+    // console.log("NRT: ",refreshToken)
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
-      .json(
+      .cookie("refreshToken", refreshToken, options)
+      .json( //TODO: fix refresh token not in response
         200,
-        {accessToken,refreshToken: newRefreshToken},
+        {accessToken,refreshToken},
         "Access Token refreshed"
       )
   } catch (error) {
