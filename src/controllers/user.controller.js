@@ -169,7 +169,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   },
   },
     {
-    new: true // return mai jo response milega usme new updated value milegi
+    //new: true //deprecated 
+    returnDocument: 'after' // return mai jo response milega usme new updated value milegi
     }
   )
 
