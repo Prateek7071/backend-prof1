@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { User } from "../models/user.models.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
-import { jwt } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 
 const generateAccessAndRefereshTokens = async (userId)=>{
   try { 
@@ -204,8 +204,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     if (!user) {
       throw new ApiError(401,"Invalid refresh token")
     }
-  
-    if (decodedToken !== user?.refreshToken) { // i am not sure here acc to me this is right but he used incomingRefreshToken in place of decodedToken
+    console.log("-----------------------------------")
+    console.log("incoming: ", incomingRefreshToken);
+    console.log("decoded: ", decodedToken);
+    console.log("db: ", user?.refreshToken);
+    console.log("-----------------------------------")
+    if (incomingRefreshToken !== user?.refreshToken) { 
       throw new ApiError(401, "refresh token is expired or used")
     }
   
