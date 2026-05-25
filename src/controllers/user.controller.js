@@ -236,4 +236,38 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken }
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+
+  const { oldPassword, newPassword, confirmNewPassword } = req.body
+
+  if (!newPassword || !oldPassword || !confirmNewPassword) {
+    throw new ApiError(400, "password not found")
+  }
+  
+  if (!(newPassword === confirmNewPassword)) {
+    throw new ApiError(400, "new password mismatch")
+  }
+  try { 
+    
+    const user = await User.findById(req.user?._id)
+    const isPasswordCorrect = await isPasswordCorrect(oldPassword)
+  
+    if (!isPasswordCorrect) {
+      throw new ApiError(400, "invalid old password")
+    }
+  
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false }) // when we do this the pre runs in user.model
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "password changed successfully"))
+  
+  } catch (error) {
+    throw new ApiError(400,error?.message || "error changing password")
+  }
+})
+
+
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword }
