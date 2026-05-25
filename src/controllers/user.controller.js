@@ -12,7 +12,7 @@ const generateAccessAndRefereshTokens = async (userId)=>{
     const refreshToken = user.generateRefreshToken()
 
     user.refreshToken = refreshToken
-    await user.save({validateBeforeSave: False})
+    await user.save({validateBeforeSave: false})
 
     return {accessToken, refreshToken}
   } catch (error) {
@@ -115,9 +115,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const { email, password, username } = req.body
 
-  if (!username || !email) {
+  if (!username && !email) {
     throw new ApiError("400", "username or email required")
   }
+
+  //alternatively can use (!(username||email))
 
   const user = await User.findOne({
     $or : [{username},{email}]
@@ -149,7 +151,7 @@ const loginUser = asyncHandler(async (req, res) => {
     .cookie("refreshToken", refreshToken, option)
     .json(
       new ApiResponse(200, {
-        user: loggedInUser, accessToken, refresh // here sending refresh and access t for maybe the user wants to save them or for mobile where cookie not accessable. this is not the best practicce to send cookie in json but works for the purpose here
+        user: loggedInUser, accessToken, refreshToken // here sending refresh and access t for maybe the user wants to save them or for mobile where cookie not accessable. this is not the best practicce to send cookie in json but works for the purpose here
       }, " User Logged in Successfully")
     )
   
