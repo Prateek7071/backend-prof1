@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.models";
 
-export const verifyJWT = asyncHandler(async (req, res, next) => {
+export const verifyJWT = asyncHandler(async (req, _ , next) => { // here res was not used so replaced with underscore (people do this in prod)
   try {
     const token = req.cookies?.accessToken || req.header("Autherization")?.replace("Bearer ", "")
   
