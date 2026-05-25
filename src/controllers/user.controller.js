@@ -16,7 +16,7 @@ const generateAccessAndRefereshTokens = async (userId)=>{
 
     return {accessToken, refreshToken}
   } catch (error) {
-    throw new ApiError(500,"Something went wrnong when generate Access And Referesh Tokens")
+    throw new ApiError(500,error?.message || "Something went wrnong when generate Access And Referesh Tokens")
   }
 }
 
@@ -153,8 +153,10 @@ const loginUser = asyncHandler(async (req, res) => {
       }, " User Logged in Successfully")
     )
   
-  
+})
+
+const logoutUser = asyncHandler(async (req, res) => {
   
 })
 
-export { registerUser, loginUser }
+export { registerUser, loginUser, logoutUser }
