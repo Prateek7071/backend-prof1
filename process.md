@@ -66,3 +66,14 @@ created logut method and a middleware auth for logging out as cant ask user for 
 
 added login and logout routes
 finished logout method
+
+### refreshToken and accessToken 
+
+- access token is with the user and is a type of validation so that usser dont have to constantly login or provide credentials.
+- now after a short period of time (compared to refresh token) this token gets expired
+- in that case either user need to relogin based on business login or the access token needs to refresh
+- for refreshing frontend (user) sends a refresh token on recieving a 401 or check if access token is expired/expiring soon, 
+- the refreshToken sent by the user is then verified with the refresh token present in the db.
+- then a new access token is provided to user. with a new refresh token based on the business logic (may send refresh token or maynot)
+- refresh token also expires (after a long time w.r.t. access token so user need to login again )
+- storage: Client stores refresh token (usually in httpOnly cookie for web, secure storage on mobile) while Server stores it in DB (or cache) to allow revocation and verification
