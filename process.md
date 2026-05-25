@@ -58,3 +58,11 @@ made a change involving using next and async in pre where it changed in new vers
 configured collection in postman 
 see [postman1]("./process/images/postman1.png")
 see [postman1]("./process/images/postman2.png")
+
+added method for logging in user
+and created a method to generate access and refresh token with user id
+
+created logut method and a middleware auth for logging out as cant ask user for id and password to logout and we dont have access to it in the context
+
+added login and logout routes
+finished logout method
