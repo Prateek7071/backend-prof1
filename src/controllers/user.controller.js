@@ -302,22 +302,26 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar file is missing")
   }
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath) //careful returns complete object and not just the string
-
-  if (!avatar) {
-    throw new ApiError("Error uploading avatar on cloudinary ")
+  try {
+    const avatar = await uploadOnCloudinary(avatarLocalPath) //careful returns complete object and not just the string
+  
+    if (!avatar) {
+      throw new ApiError("Error uploading avatar on cloudinary ")
+    }
+  
+    const user = await User.findByIdAndUpdate(req.user?._id, {
+      $set: {
+       avatar: avatar.url
+     } 
+    }, {
+      returnDocument: 'after'
+    }).select("-password")
+    return res
+      .status(200)
+      .json(new ApiResponse(200, user, "Avatar updated successfully"))
+  } catch (error) {
+    throw new ApiError(401, error?.message || "Failed to update avatar")
   }
-
-  const user = await User.findByIdAndUpdate(req.user?._id, {
-    $set: {
-     avatar: avatar.url
-   } 
-  }, {
-    returnDocument: 'after'
-  }).select("-password")
-  return res
-    .status(200)
-    .json(new ApiResponse(200, user, "Avatar updated successfully"))
 })
 
 const updateUserCover = asyncHandler(async (req, res) => {
@@ -327,22 +331,26 @@ const updateUserCover = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Cover file is missing")
   }
 
-  const coverImage = await uploadOnCloudinary(coverLocalPath) //careful returns complete object and not just the string
-
-  if (!coverImage) {
-    throw new ApiError("Error uploading cover image on cloudinary ")
+  try {
+    const coverImage = await uploadOnCloudinary(coverLocalPath) //careful returns complete object and not just the string
+  
+    if (!coverImage) {
+      throw new ApiError("Error uploading cover image on cloudinary ")
+    }
+  
+    const user = await User.findByIdAndUpdate(req.user?._id, {
+      $set: {
+       coverImage: coverImage.url
+     } 
+    }, {
+      returnDocument: 'after'
+    }).select("-password")
+    return res
+      .status(200)
+      .json(new ApiResponse(200, user, "Cover image updated successfully"))
+  } catch (error) {
+    throw new ApiError(401, error?.message || "Failed to update avatar")
   }
-
-  const user = await User.findByIdAndUpdate(req.user?._id, {
-    $set: {
-     coverImage: coverImage.url
-   } 
-  }, {
-    returnDocument: 'after'
-  }).select("-password")
-  return res
-    .status(200)
-    .json(new ApiResponse(200, user, "Cover image updated successfully"))
 })
 
 export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails,updateUserAvatar, updateUserCover }
