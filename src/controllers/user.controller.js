@@ -288,10 +288,38 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     {
     returnDocument: 'after'
     }
-  ).select("-password -refreshToken")
+  ).select("-password")
   // TODO: add other things to update
   return res
     .status(200)
     .json(new ApiResponse(200, user, "Fullname changed successfully"))
 })
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails }
+
+const updateUserAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path
+
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar file is missing")
+  }
+
+  const avatar = await uploadOnCloudinary(avatarLocalPath) //careful returns complete object and not just the string
+
+  if (!avatar) {
+    throw new ApiError("Error uploading on cloudinary ")
+  }
+
+  const user = await User.findByIdAndUpdate(req.user?._id, {
+    $set: {
+     avatar: avatar.url
+   } 
+  }, {
+    returnDocument: 'after'
+  }).select("-password")
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Avatar updated successfully"))
+})
+
+
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails,updateUserAvatar }
