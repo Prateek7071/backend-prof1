@@ -77,3 +77,16 @@ finished logout method
 - then a new access token is provided to user. with a new refresh token based on the business logic (may send refresh token or maynot)
 - refresh token also expires (after a long time w.r.t. access token so user need to login again )
 - storage: Client stores refresh token (usually in httpOnly cookie for web, secure storage on mobile) while Server stores it in DB (or cache) to allow revocation and verification
+
+
+### Subscription schema 
+- when talking about subscription , there are two aspects subscribers and channels.
+- every subscription object has 2 things a channel name and a subscriber name:
+   example: user a subscribed to channel apple, {sub: a, channel: apple}, a->mango , b-> apple, c->apple, b->mango
+-- so here: when we ask how many subs apple has, we will not look for document with channel apple and then look for its users and call it the number of subscriber it has, cause then the document will only have one subscriber. So rather find all the document where channel is apple, then count all the documents. 
+
+--- now if you wanna know how many channels b has subscribed to: find all the document with subs as b and count
+  
+
+### aggregation pipeline mongodb //not sure
+-- in layman terms the method provides data in stages where each stage carries the data from the previous stage. So if you have a db you can using stages in aggregation pipeline perform some action the on the next stage the data after the first stage becomes the db for the second stage and so on.

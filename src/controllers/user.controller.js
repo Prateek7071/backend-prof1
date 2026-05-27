@@ -271,7 +271,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(200, req.user, "Current user fetched successfully")
+    .json(new ApiResponse(200, req.user, "Current user fetched successfully"))
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -279,7 +279,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   if (!fullname || !email) {
     throw new ApiError(400, "All fields are required!")
   }
-  const user = User.findByIdAndUpdate(req.user?._id, {
+  const user =await  User.findByIdAndUpdate(req.user?._id, {
     $set: {
       fullname, //can also do username: username and for email too
       email
@@ -349,8 +349,89 @@ const updateUserCover = asyncHandler(async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, user, "Cover image updated successfully"))
   } catch (error) {
-    throw new ApiError(401, error?.message || "Failed to update avatar")
+    throw new ApiError(401, error?.message || "Failed to update cover image")
   }
+})
+
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+  const { username } = req.params //using the link to extract username
+
+  if (!username?.trim()) {
+    throw new ApiError(400,"username is missing")
+  }
+  // User.find(username) rather than finidng user like then then perform doing all that direcrtly from finding user in db to performing action.
+  const channel = await User.aggregate([
+  
+    {
+      $match: {
+        username: username?.toLowerCase() //here we got the channel, say Fern (got one document and on the basis of that we need to do lookup)
+      }
+    },
+    
+    {
+      $lookup: {
+        // from: "Subscription" this model will be written like that down below for obvious reasons
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers" //get all document where the 
+      }
+    },
+    
+    {
+      $lookup: {
+         from: "subscriptions",
+         localField: "_id",
+         foreignField: "subscriber",
+        as: "subscriberedTo"
+      }
+    },
+
+    {
+      $addFields: {
+        subscribersCount: {
+          $size:"$subscribers"
+        },
+        channelsSubscribedTo: {
+          $size: "$subscribedTo"
+        },
+        isSubscribed: {
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] }, //present in or not
+            then: true,
+            else: false
+          }
+        }
+      }
+    },
+    {
+      $project: {
+        fullname: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelsSubscribedTo: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1
+      }
+    }
+      
+  ])
+  
+  if (!channel?.length) {
+    throw new ApiError(404, "Channel doesnt exist")
+  }
+  
+  console.log("-------------------")
+  console.log("channel: ", channel);
+  console.log("-------------------")
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200,channel[0],"User channel fetched successfully!")
+    )
 })
 
 export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails,updateUserAvatar, updateUserCover }
