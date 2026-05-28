@@ -364,29 +364,28 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   
     {
       $match: {
-        username: username?.toLowerCase() //here we got the channel, say Fern (got one document and on the basis of that we need to do lookup)
+        username: username?.toLowerCase() //here we got the document from user collection with the same username, say Fern (got one document and on the basis of that we need to do lookup to subscription collection)
       }
     },
     
     {
       $lookup: {
-        // from: "Subscription" this model will be written like that down below for obvious reasons
-        from: "subscriptions",
-        localField: "_id",
-        foreignField: "channel",
-        as: "subscribers" //get all document where the 
+        from: "subscriptions", //go to subscriber collection
+        localField: "_id",     //get id from the document aquired at previous stage say id=fern123
+        foreignField: "channel", //look for all documents with channel which contains = fern123
+        as: "subscribers" // will add a field named subscribers with array of objects from subscription model ex({_id, subscriber, channel, createdAt, upadatedAt})
       }
     },
-    
+    // at this point we have a document with all the user data(only one user with username fern123) and a field added called subscriber: [{}...]
     {
       $lookup: {
-         from: "subscriptions",
+         from: "subscriptions", //go to subscriber collection
          localField: "_id",
-         foreignField: "subscriber",
+         foreignField: "subscriber", //look for all the documents where subscriber: fern123
         as: "subscriberedTo"
       }
     },
-
+    // at this point we have a document with all the user data(only one user with username fern123) and 2 fields added called subscriber: [{}...] and subscribedTo:[{},{}]
     {
       $addFields: {
         subscribersCount: {
@@ -404,6 +403,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         }
       }
     },
+
+    //added three more fields, subscribersCount,channelsSubscribedTo,isSubscribed
+    
     {
       $project: {
         fullname: 1,
@@ -416,9 +418,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         email: 1
       }
     }
-      
+      //here just projecting the output 
   ])
-  
+  // returns an array with objects channel=[{id, fullname,username,subscribersCount ...}]
   if (!channel?.length) {
     throw new ApiError(404, "Channel doesnt exist")
   }
@@ -434,4 +436,4 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     )
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails,updateUserAvatar, updateUserCover }
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails,updateUserAvatar, updateUserCover, getUserChannelProfile }
