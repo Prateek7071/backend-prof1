@@ -39,8 +39,8 @@ router.route("/refresh-token").post(refreshAccessToken)
 router.route("/update-password").post(verifyJWT, changeCurrentPassword)
 router.route("/current-user").get(verifyJWT, getCurrentUser)
 router.route("/update-account").patch(verifyJWT, updateAccountDetails)//will only update necessary ones, if we do post will update everything which we dont want here.
-router.route("update-avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
-router.route("update-coverImage").patch(verifyJWT, upload.single("coverImage"), updateUserCover)
+router.route("/update-avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
+router.route("/update-coverImage").patch(verifyJWT, upload.single("coverImage"), updateUserCover)
 router.route("/channel/:username").get(verifyJWT, getUserChannelProfile) //here cause in the getUserChannelProfile we using req.params we need to focus on route that it contains username like this to use it later.
 router.route("/watch-history").get(verifyJWT, getWatchHistory)//user is not sending anything so we just use get
 
