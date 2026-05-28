@@ -90,3 +90,8 @@ finished logout method
 
 ### aggregation pipeline mongodb //not sure
 -- in layman terms the method provides data in stages where each stage carries the data from the previous stage. So if you have a db you can using stages in aggregation pipeline perform some action the on the next stage the data after the first stage becomes the db for the second stage and so on.
+
+### How mongodb, mongoose works with id
+-- When taking id through mongoose say (req.user._id) the id that is recieved is in string format, whereas it is store in mongodb as a ObjectId('231234214') so when working with aggregate pipeline all the data is passed directly to mongodb without the interference of mongodb, so a string is passed in place of objectId resulting in a mismatch. For other places where mongoose is involved it converts the string to object id when sending and vice verce when receiving.
+
+so to we need to convert string to objectID using 
