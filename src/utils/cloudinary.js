@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from "fs";
+import { ApiError } from './ApiError';
 
 cloudinary.config({ 
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -23,5 +24,14 @@ const uploadOnCloudinary = async (localFilePath) => {
     return null;
   }
 }
-
+//TODO: Complete the following method to delete old existing avatar
+const deleteFromCloudinary = async(avatarURL) => {
+  try { 
+    if (!avatarURL) return null;
+    //cant get public id from avatarURL, find a way to get that
+    const response = await cloudinary.destroy()
+  } catch (error) {
+    new ApiError(500, error?.message || "Error deleting from cloudinary")
+  }
+}
 export { uploadOnCloudinary }
