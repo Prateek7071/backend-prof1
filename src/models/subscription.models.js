@@ -1,4 +1,3 @@
-import { text } from "express";
 import mongoose, { Schema } from "mongoose";
 
 const subscriptionSchema = Schema({
