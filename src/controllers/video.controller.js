@@ -114,7 +114,19 @@ const updateVideo = asyncHandler(async (req, res) => {
   
 })
 
-
+const togglePublishStatus = asyncHandler(async (req, res) => {
+  const { videoId } = req.params
+  if (!videoId) {
+    throw new ApiError(400, "Video id not found")
+  }
+  const video = await Video.findById(videoId) //can this be avoided?
+  const state =await Video.findByIdAndUpdate(videoId, {
+    $set: {
+      isPublished: !video.isPublished
+    }
+  })
+  return res.status(200).json(new ApiResponse(200,state,"Publish state updated"))
+})
 export {
-  publishAVideo, getVideoById, updateVideo
+  publishAVideo, getVideoById, updateVideo, togglePublishStatus
 }
