@@ -62,7 +62,7 @@ const getVideoById = asyncHandler(async (req, res) => {
   if (!videoId?.trim()) {
     throw new ApiError(400, "video Id not found")
   }
-  const video = Video.findById(videoId)
+  const video =await Video.findById(videoId)
   if (!video) {
     throw new ApiError(404, "Video doesnt exist")
   }
@@ -73,8 +73,48 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params
+  const { title, description } = req.body
+  if (!videoId) {
+    throw new ApiError(400, "Video id not found")
+  }
+  if (!(title || description)) {
+    throw new ApiError(400,"Fields are required")
+  }
+  try { 
+    let updateData = { title, description }
+    console.log("req.file: ",req.file)
+    let thumbnailLocalPath;
+    if (req.file) {
+      thumbnailLocalPath = req.file.path
+    }  
+
+    console.log("thumbnail local path:",thumbnailLocalPath)
+  
+    const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+    
+    if (thumbnail?.url) {
+      updateData.thumbnail = thumbnail.url
+    }
+
+    console.log("thumbnail on cloudinary:", thumbnail)
+    
+    const video =await Video.findByIdAndUpdate(videoId, {
+      $set: updateData
+    },
+    {
+      returnDocument: 'after'
+    })
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200,video,"Updated video successfully"))
+    } catch (error) {
+      throw new ApiError(400, "Error updating video")
+  }
   
 })
+
+
 export {
-  publishAVideo, getVideoById
+  publishAVideo, getVideoById, updateVideo
 }
