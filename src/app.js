@@ -32,4 +32,7 @@ app.use("/api/v1/users", userRouter)
 import videoRoute from "./routes/video.route.js"
 app.use("/api/v1/videos",videoRoute)
 
+import tweetRouter from "./routes/tweet.route.js"
+app.use("/api/v1/tweets", tweetRouter)
+
 export { app }
