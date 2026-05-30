@@ -29,4 +29,7 @@ import userRouter from "./routes/user.route.js"
 app.use("/api/v1/users", userRouter)
 // https://localhost:8000/api/v1/users/register
 
+import videoRoute from "./routes/video.route.js"
+app.use("/api/v1/videos",videoRoute)
+
 export { app }
