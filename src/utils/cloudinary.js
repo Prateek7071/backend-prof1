@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from "fs";
-import { ApiError } from './ApiError';
+import { ApiError } from './ApiError.js';
 
 cloudinary.config({ 
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -24,6 +24,24 @@ const uploadOnCloudinary = async (localFilePath) => {
     return null;
   }
 }
+
+const uploadVideoOnCloudinary = async (localFilePath) => {
+  try {
+    if (!localFilePath) return null;
+    const response = await cloudinary.uploader.upload(
+      localFilePath, {
+        resource_type: "video"
+      }
+    )
+    fs.unlinkSync(localFilePath)
+    return response
+  } catch (error) {
+    fs.unlinkSync(localFilePath)
+    throw new ApiError(400, error?.message || "Cant find the video file to uplaod")
+  }
+}
+
+
 //TODO: Complete the following method to delete old existing avatar
 const deleteFromCloudinary = async(avatarURL) => {
   try { 
@@ -34,4 +52,4 @@ const deleteFromCloudinary = async(avatarURL) => {
     new ApiError(500, error?.message || "Error deleting from cloudinary")
   }
 }
-export { uploadOnCloudinary }
+export { uploadOnCloudinary, uploadVideoOnCloudinary }
