@@ -361,7 +361,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   if (!username?.trim()) {
     throw new ApiError(400,"username is missing")
   }
-  // User.find(username) rather than finidng user like then then perform doing all that direcrtly from finding user in db to performing action.
+  // User.find(username) rather than finidng user like that then perform doing all that operations, do direcrtly from finding user in db to performing action.
   const channel = await User.aggregate([
   
     {
