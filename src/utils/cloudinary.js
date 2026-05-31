@@ -43,13 +43,16 @@ const uploadVideoOnCloudinary = async (localFilePath) => {
 
 
 //TODO: Complete the following method to delete old existing avatar
-const deleteFromCloudinary = async(avatarURL) => {
+const deleteFromCloudinary = async(publicId) => {
   try { 
-    if (!avatarURL) return null;
+    if (!publicId) return null;
     //cant get public id from avatarURL, find a way to get that
-    const response = await cloudinary.destroy()
+    const response = await cloudinary.destroy(publicId)
+    return response
   } catch (error) {
     new ApiError(500, error?.message || "Error deleting from cloudinary")
   }
 }
-export { uploadOnCloudinary, uploadVideoOnCloudinary }
+
+
+export { uploadOnCloudinary, uploadVideoOnCloudinary,deleteFromCloudinary }
