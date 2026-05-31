@@ -10,4 +10,3 @@ const healthcheck = asyncHandler(async (_, res) => {
 export {
     healthcheck
     }
-    
