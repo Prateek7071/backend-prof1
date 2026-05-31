@@ -1,6 +1,6 @@
 import mongoose,{ Schema } from "mongoose";
 
-const commentSchema = Schema({
+const commentSchema =new Schema({
   content: {
     type: String,
     required: true,
