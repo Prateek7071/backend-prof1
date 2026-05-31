@@ -36,5 +36,8 @@ import tweetRouter from "./routes/tweet.route.js"
 app.use("/api/v1/tweets", tweetRouter)
 
 import healthcheckRouter from "./routes/healthcheck.route.js"
-app.use("/api/v1/healthcheck",healthcheckRouter)
+app.use("/api/v1/healthcheck", healthcheckRouter)
+
+import subscriptionRouter from "./routes/subscription.route.js"
+app.use("/api/v1/subscriptions", subscriptionRouter)
 export { app }
