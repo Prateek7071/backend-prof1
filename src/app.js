@@ -40,4 +40,7 @@ app.use("/api/v1/healthcheck", healthcheckRouter)
 
 import subscriptionRouter from "./routes/subscription.route.js"
 app.use("/api/v1/subscriptions", subscriptionRouter)
+
+import commentRouter from "./routes/comment.route.js"
+app.use("/api/v1/comments",commentRouter)
 export { app }
