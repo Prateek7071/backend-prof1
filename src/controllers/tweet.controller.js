@@ -54,7 +54,7 @@ const updateTweet = asyncHandler(async (req, res) => {
     owner: req.user?._id,
     _id: tweetId
   })
-  let updateTweet = "";
+  let updatedTweet = "";
   if (!isAuthorised) {
     throw new ApiError(403,"Unauthorised to update tweet")
   }
@@ -74,7 +74,19 @@ const deleteTweet = asyncHandler(async (req, res) => {
   if (!tweetId) {
     throw new ApiError(400,"Tweet doesnt exist")
   }
-  await Tweet.findByIdAndDelete(tweetId)
+
+  const isAuthorised = await Tweet.findOne({
+    owner: req.user?._id,
+    _id: tweetId
+  })
+
+  if (!isAuthorised) {
+    throw new ApiError(403,"Unauthorised to delete tweet")
+  }
+
+  if (isAuthorised) {
+    await Tweet.findByIdAndDelete(tweetId)
+  }
 
   return res.status(200).json(new ApiResponse(200, {}, "Tweet deleted successfully"))
   
