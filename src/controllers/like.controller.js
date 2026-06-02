@@ -63,7 +63,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 })
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
-  const {tweetId} = req.params
+  const { tweetId } = req.params
   if (!tweetId) {
     throw new ApiError(400, "Tweet not found")
   }
@@ -73,7 +73,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     likedBy: req.user?._id
   })
 
-  const likedTweet=""
+  const likedTweet = ""
   if (!isLiked) {
     likedTweet = await Like.create({
       $set: {
@@ -88,7 +88,9 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
   return res.
     status(200).
-    json(new ApiResponse(200, likedTweet, isLiked ? "Disliked tweet" : "Liked tweet"
+    json(new ApiResponse(200, likedTweet, isLiked ? "Disliked tweet" : "Liked tweet"))
+
+})
 
 export {
   toggleVideoLike,
