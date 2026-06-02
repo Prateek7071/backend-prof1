@@ -17,7 +17,9 @@ const getVideoComments = asyncHandler(async (req, res) => {
   const limitNumber = parseInt(limit, 10)
   const videoComments = await Comment.aggregate([
     {
-      $match: new mongoose.Types.ObjectId(videoId)
+      $match: {
+        video: new mongoose.Types.ObjectId(videoId)
+      }
     },
     {
       $sort:{createdAt: -1}
@@ -44,9 +46,9 @@ const getVideoComments = asyncHandler(async (req, res) => {
               content: 1,
               createdAt: 1,
               owner: "$ownerDetails._id",
-              fullname: "$ownerDetails._fullname",
-              avatar: "$ownerDetails._avatar",
-              username: "$ownerDetails._username"
+              fullname: "$ownerDetails.fullname",
+              avatar: "$ownerDetails.avatar",
+              username: "$ownerDetails.username"
             }
           }
         ]
@@ -57,7 +59,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
   if (!videoComments) {
     throw new ApiError(500,"Cant retrieve data")
   }
-  console.log(videoComments)
+  console.log(videoComments[0].data)
   const total = videoComments[0].metadata[0]?.total || 0;
   const data = videoComments[0].data
 
