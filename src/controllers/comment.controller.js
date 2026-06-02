@@ -12,6 +12,62 @@ const getVideoComments = asyncHandler(async (req, res) => {
   if(!videoId) {
     throw new ApiError(400, "Video not found")
   }
+
+  const pageNumber = parseInt(page, 10)
+  const limitNumber = parseInt(limit, 10)
+  const videoComments = await Comment.aggregate([
+    {
+      $match: new mongoose.Types.ObjectId(videoId)
+    },
+    {
+      $sort:{createdAt: -1}
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "ownerDetails"
+      }
+    },
+    {
+      $unwind: "$ownerDetails"
+    },
+    {
+      $facet: { 
+        metadata: [{ $count: "total" }],
+        data: [
+          { $skip: (pageNumber - 1) * limitNumber },
+          { $limit: limitNumber },
+          { //cleaning output everytime
+            $project: {
+              content: 1,
+              createdAt: 1,
+              owner: "$ownerDetails._id",
+              fullname: "$ownerDetails._fullname",
+              avatar: "$ownerDetails._avatar",
+              username: "$ownerDetails._username"
+            }
+          }
+        ]
+      }
+    }
+  ])
+
+  if (!videoComments) {
+    throw new ApiError(500,"Cant retrieve data")
+  }
+  console.log(videoComments)
+  const total = videoComments[0].metadata[0]?.total || 0;
+  const data = videoComments[0].data
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {
+      totalComments: total,
+      data: data
+    }, "All comments retrieved successfully")
+    )
 })
 
 const addComment = asyncHandler(async (req, res) => {
@@ -91,5 +147,5 @@ const deleteComment = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {},"Comment deleted successfully"))
 })
 export {
-    addComment,updateComment, deleteComment
+    addComment,updateComment, deleteComment, getVideoComments
 }
