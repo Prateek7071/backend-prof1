@@ -95,3 +95,71 @@ finished logout method
 -- When taking id through mongoose say (req.user._id) the id that is recieved is in string format, whereas it is store in mongodb as a ObjectId('231234214') so when working with aggregate pipeline all the data is passed directly to mongodb without the interference of mongodb, so a string is passed in place of objectId resulting in a mismatch. For other places where mongoose is involved it converts the string to object id when sending and vice verce when receiving.
 
 so to we need to convert string to objectID using 
+
+
+### the pagenation thing idk anymore
+
+
+so when doing this 
+const videoComments = await Comment.aggregate([
+    {
+      $match: new mongoose.Types.ObjectId(videoId)
+    },
+    {
+      $sort:{createdAt: -1}
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "ownerDetails"
+      }
+    },
+    {
+      $unwind: "$ownerDetails"
+    },
+    {
+      $facet: { 
+        metadata: [{ $count: "total" }],
+        data: [
+          {
+            $skip: (pageNumber - 1) * limitNumber
+          },
+          {
+            $limit: limitNumber
+          }
+        ]
+      }
+    }
+  ])
+
+  the output of videoComments is like this:
+  // the videoComments returns two [{metadata},{data}]
+  // [
+  //   {
+  //     "metadata": [
+  //       { "total": 150 } 
+  //     ],
+  //     "data": [
+  //       {
+  //         "_id": "...",
+  //         "content": "This is the first comment",
+  //         "video": "...",
+  //         "owner": "...",
+  //         "createdAt": "...",
+  //         "ownerDetails": { 
+  //           "_id": "...",
+  //           "username": "Alice",
+  //           "avatar": "..."
+  //         }
+  //       },
+  //       // ... up to 10 comments (your limit)
+  //     ]
+  //   }
+  // ]
+  // 
+  // something like this and using facet and then data and all that is the manual way to write a pagenation pipeline
+
+
+  but we can beautify using pipeline what we need as output and thats what is done in the comment.controller.js file
