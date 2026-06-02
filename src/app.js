@@ -42,5 +42,9 @@ import subscriptionRouter from "./routes/subscription.route.js"
 app.use("/api/v1/subscriptions", subscriptionRouter)
 
 import commentRouter from "./routes/comment.route.js"
-app.use("/api/v1/comments",commentRouter)
+app.use("/api/v1/comments", commentRouter)
+
+import likeRouter from "./routes/like.route.js"
+app.use("/api/v1/likes", likeRouter)
+
 export { app }
