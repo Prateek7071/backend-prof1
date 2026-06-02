@@ -21,22 +21,55 @@ const createTweet = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, tweet, "Tweet created"))
 })
 
-//TODO: needs modification
+//TODO: decide if anyone can get anyones tweets? for now they can.
 const getUserTweets = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+  if (!userId.trim()) {
+    throw new ApiError(400,"User not found")
+  }
+
+  const userExists = await User.findById(userId)
+
+  if (!userExists) {
+    throw new ApiError(404,"User not found, please create account")
+  }
+
   const tweets = await Tweet.aggregate([
     {
       $match: {
-        owner: new mongoose.Types.ObjectId(req.user._id)
+        owner: new mongoose.Types.ObjectId(userId)
       }
     },
     {      
+      $sort: {createdAt: -1}
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "ownerDetails"
+      }
+    },
+    {
+      $unwind:"$ownerDetails"
+    },
+    {
       $project: {
-        content:1
+        content: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        owner: "$ownerDetails._id",
+        fullname: "$ownerDetails.fullname",
+        avatar:"$ownerDetails.avatar",
+        username:"$ownerDetails.username"
       }
     }
   ])
-  console.log("tweets:  ",tweets)
-
+  console.log("tweets: ",tweets)
+  if (!tweets) {
+    throw new ApiError(500, "Cant retrieve tweets at the moment")
+  }
   return res.status(200).json(new ApiResponse(200,tweets,"Tweets fetched successfully"))
 })
 

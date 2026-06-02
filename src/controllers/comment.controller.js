@@ -3,6 +3,7 @@ import { Comment } from "../models/comment.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { Video } from "../models/video.models.js";
 
 
 const getVideoComments = asyncHandler(async (req, res) => {
@@ -11,6 +12,12 @@ const getVideoComments = asyncHandler(async (req, res) => {
   const {page = 1, limit = 10} = req.query
   if(!videoId) {
     throw new ApiError(400, "Video not found")
+  }
+
+  const videoExists = await Video.findById(videoId)
+
+  if (!videoExists) {
+    throw new ApiError(404,"User not found, please create account")
   }
 
   const pageNumber = parseInt(page, 10)
@@ -45,6 +52,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
             $project: {
               content: 1,
               createdAt: 1,
+              updatedAt: 1,
               owner: "$ownerDetails._id",
               fullname: "$ownerDetails.fullname",
               avatar: "$ownerDetails.avatar",
