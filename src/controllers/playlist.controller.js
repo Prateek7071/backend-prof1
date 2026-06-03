@@ -190,7 +190,6 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, userPlaylist[0],"Playlist retrieved"))
 })
 
-
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params
 
@@ -280,7 +279,6 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, {}, "Playlist deleted"));
 })
-
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
