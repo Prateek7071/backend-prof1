@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { Playlist } from "../models/playlist.models.js"
+import mongoose from "mongoose"
 
 const createPlaylist = asyncHandler(async (req, res) => {
   const { name, description } = req.body
@@ -28,6 +29,66 @@ const createPlaylist = asyncHandler(async (req, res) => {
   }
 })
 
+const getUserPlaylists = asyncHandler(async (req, res) => {
+  const {userId} = req.params
+
+  if (!userId) {
+    throw new ApiError(400, "User required")
+  }
+
+  const userPlaylists = await Playlist.aggregate([
+    {
+      $match: {
+        owner: new mongoose.Types.ObjectId(userId)
+      }
+    },
+    {
+      $sort: {createdAt:-1}
+    },
+    {
+      $facet: {
+        metadata: [{ $count: "totalPlaylists" }],
+        data: [
+          {
+            $addFields: {
+              videoCount: { $size: "$videos" },
+              thumbnail:
+              {
+                $arrayElemAt: ["$videos.thumbnail", 0]
+              }
+            }
+          },
+          {
+            $project: {
+              name: 1,
+              description: 1,
+              thumbnail: 1,
+              videoCount: 1,
+              updatedAt: 1,
+              createdAt: 1
+            }
+          }
+        ],
+      }
+    }
+  ])
+
+  // if (userPlaylists.length === 0) {
+  //   throw new ApiError(404,"User playlists does not exist")
+  // } useless as if no playlist it returns one obj with metadata as [] and data []
+  
+  const total = userPlaylists[0].metadata[0]?.totalPlayLists || 0
+  const data = userPlaylists[0].data
+  return res.
+    status(200).
+    json(new ApiResponse(
+      200,{
+      totalPlaylists: total,
+      data: data
+      },
+      "User playlist retrieved"))
+})
+
 export {
-  createPlaylist
+  createPlaylist, getUserPlaylists
 }
