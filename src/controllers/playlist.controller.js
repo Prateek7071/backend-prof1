@@ -186,13 +186,92 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Playlist not found")
   }
   
-
   return res
     .status(200)
     .json(new ApiResponse(200, userPlaylist[0],"Playlist retrieved"))
 })
 
 
+const addVideoToPlaylist = asyncHandler(async (req, res) => {
+  const { playlistId, videoId } = req.params
+
+  if (!(playlistId && videoId)) {
+    throw new ApiError(400, "Bad request")
+  }
+  
+  const playlist = await Playlist.findByIdAndUpdate(playlistId, {
+      $addToSet: {
+        video: videoId
+      }
+  }, {
+    returnDocument: "after"
+  }
+  ) 
+
+  if (!playlist) {
+    throw new ApiError(500, "Failed to add video")
+  } 
+
+  return res.status(200).json(new ApiResponse(200, playlist,"Video added to playlist"))
+})
+
+const updatePlaylist = asyncHandler(async (req, res) => {
+
+  const { playlistId } = req.params
+  const {name, description} = req.body
+
+  const updateFields = {}
+
+  if (name) updateFields.name = name
+  if (description) updateFields.description = description
+  
+  if (!playlistId) {
+    throw new ApiError(400,"No playlist found")
+  }
+
+  if (!(name || description)) {
+    throw new ApiError(400, "Name or description required")
+  }
+
+  const updatedPlaylist = await Playlist.findByIdAndUpdate(playlistId, {
+      $set: updateFields
+    },
+    {
+      returnDocument: "after"
+  })
+
+  if (!updatedPlaylist) {
+    throw new ApiError(500,"Failed to update playlist")
+  }
+
+  return res.status(200).json(new ApiResponse(200,updatedPlaylist,"Playlist updated"))
+})
+
+const deletePlaylist = asyncHandler(async (req, res) => {
+  const { playlistId } = req.params
+  
+  if (!playlistId) {
+    throw new ApiError(400,"No playlist found")
+  }
+  try { 
+    await Playlist.findByIdAndDelete(playlistId)
+  } catch (error) {
+    throw new ApiError(500,"Cant delete playlist")
+  }
+
+  return res.status(200).json(new ApiResponse(200, {},"Playlist deleted"))
+})
+
+
+const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
+  const {playlistId, videoId} = req.params
+  if (!(playlistId && videoId)) {
+      throw new ApiError(400, "Not found")
+  }
+  
+
+})
+
 export {
-  createPlaylist, getUserPlaylists, getPlaylistById
+  createPlaylist, getUserPlaylists, getPlaylistById, addVideoToPlaylist
 }
