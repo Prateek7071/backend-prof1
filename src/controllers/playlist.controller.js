@@ -11,10 +11,10 @@ const createPlaylist = asyncHandler(async (req, res) => {
   if (!(name && description)) {
     throw new ApiError(400, "Name or description required")
   }
-  
+
   //rather than checking here then creating, just let the db check if duplicate exist it will just throw error
 
-  try { 
+  try {
     const newPlaylist = await Playlist.create({
       name: name,
       description: description,
@@ -58,7 +58,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
               $expr: { $eq: ["$_id", "$$video_id"] }
             }
           },
-          { $project: { thumbnail: 1 } } 
+          { $project: { thumbnail: 1 } }
         ],
         as:"firstVideo"
       }
@@ -94,7 +94,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
   // if (userPlaylists.length === 0) {
   //   throw new ApiError(404,"User playlists does not exist")
   // } ONLY FOR FACEIT OUTPUTS: useless as if no playlist it returns one obj with metadata as [] and data []
-  
+
   const total = userPlaylists[0].metadata[0]?.totalPlayLists || 0
   const data = userPlaylists[0].data
   return res.
@@ -185,7 +185,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
   if (!userPlaylist.length) {
     throw new ApiError(404, "Playlist not found")
   }
-  
+
   return res
     .status(200)
     .json(new ApiResponse(200, userPlaylist[0],"Playlist retrieved"))
@@ -198,80 +198,118 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
   if (!(playlistId && videoId)) {
     throw new ApiError(400, "Bad request")
   }
-  
+
   const playlist = await Playlist.findByIdAndUpdate(playlistId, {
       $addToSet: {
-        video: videoId
+        videos: videoId
       }
   }, {
     returnDocument: "after"
   }
-  ) 
+  )
 
   if (!playlist) {
-    throw new ApiError(500, "Failed to add video")
-  } 
+    throw new ApiError(404, "Playlist not found")
+  }
 
   return res.status(200).json(new ApiResponse(200, playlist,"Video added to playlist"))
 })
 
 const updatePlaylist = asyncHandler(async (req, res) => {
+  const { playlistId } = req.params;
+  const { name, description } = req.body;
 
-  const { playlistId } = req.params
-  const {name, description} = req.body
-
-  const updateFields = {}
-
-  if (name) updateFields.name = name
-  if (description) updateFields.description = description
-  
   if (!playlistId) {
-    throw new ApiError(400,"No playlist found")
+    throw new ApiError(400, "No playlist found");
   }
 
   if (!(name || description)) {
-    throw new ApiError(400, "Name or description required")
+    throw new ApiError(400, "Name or description required");
   }
 
-  const updatedPlaylist = await Playlist.findByIdAndUpdate(playlistId, {
-      $set: updateFields
+  const updateFields = {};
+
+  if (name) updateFields.name = name;
+  if (description) updateFields.description = description;
+
+  const updatedPlaylist = await Playlist.findByIdAndUpdate(
+    playlistId,
+    {
+      $set: updateFields,
     },
     {
-      returnDocument: "after"
-  })
+      returnDocument: "after",
+    }
+  );
 
   if (!updatedPlaylist) {
-    throw new ApiError(500,"Failed to update playlist")
+    throw new ApiError(500, "Failed to update playlist");
   }
 
-  return res.status(200).json(new ApiResponse(200,updatedPlaylist,"Playlist updated"))
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedPlaylist, "Playlist updated"));
 })
 
 const deletePlaylist = asyncHandler(async (req, res) => {
-  const { playlistId } = req.params
-  
+  const { playlistId } = req.params;
+
   if (!playlistId) {
-    throw new ApiError(400,"No playlist found")
-  }
-  try { 
-    await Playlist.findByIdAndDelete(playlistId)
-  } catch (error) {
-    throw new ApiError(500,"Cant delete playlist")
+    throw new ApiError(400, "No playlist found");
   }
 
-  return res.status(200).json(new ApiResponse(200, {},"Playlist deleted"))
+  // const isAuthorised = await Playlist.findOne({
+  //   owner: req.user?._id,
+  //   _id: playlistId,
+  // });
+
+  // if (!isAuthorised) {
+  //   throw new ApiError(403, "Not authorised to delete this playlist");
+  // } direclty doing this below
+
+  const deletedPlaylist = await Playlist.findOneAndDelete({
+    owner: req.user?._id,
+    _id: playlistId
+  })
+
+  if (!deletedPlaylist) {
+    throw new ApiError(404, "Failed to delete playlist");
+  }
+
+  return res.status(200).json(new ApiResponse(200, {}, "Playlist deleted"));
 })
 
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
-  const {playlistId, videoId} = req.params
+  const { playlistId, videoId } = req.params;
   if (!(playlistId && videoId)) {
-      throw new ApiError(400, "Not found")
+    throw new ApiError(400, "Not found");
   }
-  
 
+  const afterRemoved = await Playlist.findOneAndUpdate(
+    {
+      _id: playlistId,
+      owner: req.user?._id,
+    },
+    {
+      $pull: {
+        videos: videoId,
+      },
+    },
+    {
+      returnDocument: "after",
+    }
+  );
+
+  if (!afterRemoved) {
+    throw new ApiError(404, "Cant remove video");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, afterRemoved, "Video removed from playlist"));
 })
 
 export {
-  createPlaylist, getUserPlaylists, getPlaylistById, addVideoToPlaylist
+  createPlaylist, getUserPlaylists, getPlaylistById, addVideoToPlaylist, updatePlaylist, deletePlaylist, removeVideoFromPlaylist
 }
