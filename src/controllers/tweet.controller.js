@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 
 const createTweet = asyncHandler(async (req, res) => {
   const { content } = req.body
-  if (!content) {
+  if (!content.trim()) {
     throw new ApiError(400, "Content required")
   }
 
@@ -17,21 +17,16 @@ const createTweet = asyncHandler(async (req, res) => {
   })
 
   return res
-    .status(200)
-    .json(new ApiResponse(200, tweet, "Tweet created"))
+    .status(201)
+    .json(new ApiResponse(201, tweet, "Tweet created"))
 })
 
 //TODO: decide if anyone can get anyones tweets? for now they can.
 const getUserTweets = asyncHandler(async (req, res) => {
   const { userId } = req.params
+
   if (!userId.trim()) {
     throw new ApiError(400,"User not found")
-  }
-
-  const userExists = await User.findById(userId)
-
-  if (!userExists) {
-    throw new ApiError(404,"User not found, please create account")
   }
 
   const tweets = await Tweet.aggregate([
@@ -40,7 +35,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
         owner: new mongoose.Types.ObjectId(userId)
       }
     },
-    {      
+    {
       $sort: {createdAt: -1}
     },
     {
@@ -67,62 +62,62 @@ const getUserTweets = asyncHandler(async (req, res) => {
     }
   ])
   console.log("tweets: ",tweets)
-  if (!tweets) {
-    throw new ApiError(500, "Cant retrieve tweets at the moment")
-  }
+  
   return res.status(200).json(new ApiResponse(200,tweets,"Tweets fetched successfully"))
 })
 
 const updateTweet = asyncHandler(async (req, res) => {
-  const { tweetId } = req.params
+  const { tweetId } = req.params;
   if (!tweetId) {
-    throw new ApiError(400, "Tweet doesnt exist")
+    throw new ApiError(400, "Tweet doesnt exist");
   }
-  const { content } = req.body
-  if (!content) {
-    throw new ApiError(400, "Content required")
+  const { content } = req.body;
+  if (!content.trim()) {
+    throw new ApiError(400, "Content required");
   }
 
-  const isAuthorised = await Tweet.findOne({
-    owner: req.user?._id,
-    _id: tweetId
-  })
-  let updatedTweet = "";
-  if (!isAuthorised) {
-    throw new ApiError(403,"Unauthorised to update tweet")
-  }
-  if (isAuthorised) {
-    updatedTweet = await Tweet.findByIdAndUpdate(req.user?._id, {
+  const updatedTweet = await Tweet.findOneAndUpdate(
+    {
+      owner: req.user?._id,
+      _id: tweetId,
+    },
+    {
       $set: {
-        content
-      }
-    })
+        content,
+      },
+    },
+    {
+      returnDocument: "after",
+    }
+  );
+
+  if (!updatedTweet) {
+    throw new ApiError(404, "Cant update tweet");
   }
-  return res.status(200).json(new ApiResponse(200, updatedTweet, "Tweet updated"))
-  
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedTweet, "Tweet updated"));
 })
 
 const deleteTweet = asyncHandler(async (req, res) => {
-  const { tweetId } = req.params
+  const { tweetId } = req.params;
   if (!tweetId) {
-    throw new ApiError(400,"Tweet doesnt exist")
+    throw new ApiError(400, "Tweet doesnt exist");
   }
 
-  const isAuthorised = await Tweet.findOne({
+  const deletedTweet = await Tweet.findOneAndDelete({
     owner: req.user?._id,
-    _id: tweetId
-  })
+    _id: tweetId,
+  });
 
-  if (!isAuthorised) {
-    throw new ApiError(403,"Unauthorised to delete tweet")
+  if (!deletedTweet) {
+    throw new ApiError(404, "Cant delete tweet");
   }
 
-  if (isAuthorised) {
-    await Tweet.findByIdAndDelete(tweetId)
-  }
-
-  return res.status(200).json(new ApiResponse(200, {}, "Tweet deleted successfully"))
-  
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Tweet deleted successfully"));
 })
 
 export {
