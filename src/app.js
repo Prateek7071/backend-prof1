@@ -47,4 +47,6 @@ app.use("/api/v1/comments", commentRouter)
 import likeRouter from "./routes/like.route.js"
 app.use("/api/v1/likes", likeRouter)
 
+import playlistRouter from "./routes/playlist.route.js"
+app.use("/api/v1/playlists", playlistRouter)
 export { app }
