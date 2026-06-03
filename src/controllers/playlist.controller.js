@@ -109,6 +109,89 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 
 // for now all playlists are public
 
+const getPlaylistById = asyncHandler(async (req, res) => {
+  const {playlistId} = req.params
+  if (!playlistId) {
+    throw new ApiError(400,"Playlist not found")
+  }
+  const userPlaylist = await Playlist.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(playlistId)
+      }
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "videos",
+        foreignField: "_id",
+        as: "videoDetails",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              pipeline: [
+                {
+                  $project: {
+                    username: 1,
+                    fullname: 1
+                  }
+                }
+              ],
+              as: "ownerDetails"
+            }
+          },
+          {
+            $addFields: {
+              owner: { $arrayElemAt: ["$ownerDetails", 0] }
+            }
+          }
+        ]
+      }
+    },
+    {
+      $sort:{createdAt: -1}
+    },
+    {
+      $addFields: {
+        videoCount: { $size: "$videos" },
+        thumbnail: { $arrayElemAt: ["$videoDetails.thumbnail", 0] },
+      }
+    },
+    {
+      $project: {
+        name: 1,
+        description: 1,
+        updatedAt: 1,
+        videoCount: 1,
+        thumbnail: 1,
+        videoDetails: {
+          title: 1,
+          thumbnail: 1,
+          duration: 1,
+          views: 1,
+          owner: {
+            username: 1,
+            fullname: 1
+          },
+          updatedAt: 1
+        }
+      }
+    }
+  ])
+
+  if (!userPlaylist.length) {
+    throw new ApiError(404, "Playlist not found")
+  }
+  
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userPlaylist[0],"Playlist retrieved"))
+})
+
 
 export {
   createPlaylist, getUserPlaylists, getPlaylistById
