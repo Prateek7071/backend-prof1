@@ -1,9 +1,8 @@
+import mongoose from "mongoose"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { Playlist } from "../models/playlist.models.js"
-import mongoose from "mongoose"
-import { v6ToV1 } from "uuid"
 
 const createPlaylist = asyncHandler(async (req, res) => {
   const { name, description } = req.body
@@ -95,7 +94,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
   //   throw new ApiError(404,"User playlists does not exist")
   // } ONLY FOR FACEIT OUTPUTS: useless as if no playlist it returns one obj with metadata as [] and data []
 
-  const total = userPlaylists[0].metadata[0]?.totalPlayLists || 0
+  const total = userPlaylists[0].metadata[0]?.totalPlaylists || 0
   const data = userPlaylists[0].data
   return res.
     status(200).
@@ -232,8 +231,11 @@ const updatePlaylist = asyncHandler(async (req, res) => {
   if (name) updateFields.name = name;
   if (description) updateFields.description = description;
 
-  const updatedPlaylist = await Playlist.findByIdAndUpdate(
-    playlistId,
+  const updatedPlaylist = await Playlist.findOneAndUpdate(
+    {
+      owner: req.user?._id,
+      _id: playlistId
+    },
     {
       $set: updateFields,
     },
@@ -243,7 +245,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
   );
 
   if (!updatedPlaylist) {
-    throw new ApiError(500, "Failed to update playlist");
+    throw new ApiError(404, "Failed to update playlist");
   }
 
   return res
