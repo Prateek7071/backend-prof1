@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { Playlist } from "../models/playlist.models.js"
 import mongoose from "mongoose"
+import { v6ToV1 } from "uuid"
 
 const createPlaylist = asyncHandler(async (req, res) => {
   const { name, description } = req.body
@@ -46,6 +47,23 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
       $sort: {createdAt:-1}
     },
     {
+      $lookup: {
+        from: "videos",
+        let: {
+          video_id: {$arrayElemAt:["$videos",0]}
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$_id", "$$video_id"] }
+            }
+          },
+          { $project: { thumbnail: 1 } } 
+        ],
+        as:"firstVideo"
+      }
+    },
+    {
       $facet: {
         metadata: [{ $count: "totalPlaylists" }],
         data: [
@@ -54,7 +72,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
               videoCount: { $size: "$videos" },
               thumbnail:
               {
-                $arrayElemAt: ["$videos.thumbnail", 0]
+                $arrayElemAt: ["$firstVideo.thumbnail", 0]
               }
             }
           },
@@ -75,7 +93,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 
   // if (userPlaylists.length === 0) {
   //   throw new ApiError(404,"User playlists does not exist")
-  // } useless as if no playlist it returns one obj with metadata as [] and data []
+  // } ONLY FOR FACEIT OUTPUTS: useless as if no playlist it returns one obj with metadata as [] and data []
   
   const total = userPlaylists[0].metadata[0]?.totalPlayLists || 0
   const data = userPlaylists[0].data
@@ -90,75 +108,6 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 })
 
 // for now all playlists are public
-
-const getPlaylistById = asyncHandler(async (req, res) => {
-  const {playlistId} = req.params
-  if (!playlistId) {
-    throw new ApiError(400,"Playlist not found")
-  }
-  const userPlaylist = await Playlist.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(playlistId)
-      }
-    },
-    {
-      $facet: {
-        metadata: [
-          {
-            $addFields: {
-              videoCount: { $size: "$videos" },
-              thumnail: {$arrayElemAt: ["$videos.thumbnail",0]}
-            }
-          },
-          {
-            $porject: {
-              name: 1,
-              description: 1,
-              updatedAt: 1,
-              videoCount: 1,
-              thumbnail: 1
-            }
-          }
-        ],
-        data: [
-          {
-            $addFields: {
-              videoDetails: [
-                {
-                  $lookup: {
-                    from: "videos",
-                    localField: "videos",
-                    foreignField: "_id",
-                    as: "videoDetails"
-                  }
-                },
-                {
-                  $project: {
-                    thumbnail: 1,
-                    title: 1,
-                    duration: 1,
-                    views: 1,
-                    owner: 1,
-                    published: "$videos.updatedAt"
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    }
-  ])
-  const aboutPlaylist = userPlaylist[0].metadata[0]
-  const videoDetails = userPlaylist[0].data
-
-  return res.status(200).json(new ApiResponse(200, {
-    about: aboutPlaylist,
-    videos: videoDetails
-  },
-  "Playlist retrieved"))
-})
 
 
 export {
