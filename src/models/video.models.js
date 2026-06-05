@@ -6,8 +6,16 @@ const videoSchema = new Schema({
     type: String, //cloudnart url
     required: [true, "Provide a video"]
   },
+  videoPublicId: {
+    type: String,
+    required: [true,"Provide videoId"]
+  },
   thumbnail: {
     type: String, //cloudnart url
+    required: true
+  },
+  thumbnailPublicId: {
+    type: String,
     required: true
   },
   title: {
