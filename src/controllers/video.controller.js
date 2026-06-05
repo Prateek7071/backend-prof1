@@ -67,8 +67,10 @@ const publishAVideo = asyncHandler(async (req, res) => {
   }
 
   const video = await Video.create({
-    videoFile: videoFile.url,
-    thumbnail: thumbnail.url,
+    videoFile: videoFile.secure_url,
+    videoPublicId: videoFile.public_id,
+    thumbnail: thumbnail.secure_url,
+    thumbnailPublicId: thumbnail.public_id,
     title,
     description,
     duration: videoFile.duration,
@@ -123,8 +125,9 @@ const updateVideo = asyncHandler(async (req, res) => {
   
     const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
     
-    if (thumbnail?.url) {
-      updateData.thumbnail = thumbnail.url
+    if (thumbnail?.secure_url && thumbnail?.public_id) {
+      updateData.thumbnail = thumbnail.secure_url
+      updateData.thumbnailPublicId= thumbnail.public_id
     }
 
     console.log("thumbnail on cloudinary:", thumbnail)
