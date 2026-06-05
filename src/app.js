@@ -49,4 +49,9 @@ app.use("/api/v1/likes", likeRouter)
 
 import playlistRouter from "./routes/playlist.route.js"
 app.use("/api/v1/playlists", playlistRouter)
+
+import dashboardRouter from "./routes/dashboard.route.js"
+app.use("/api/v1/dashboard", dashboardRouter)
+
+
 export { app }
