@@ -13,7 +13,7 @@ import {
   updateUserCover
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js"
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router()
 
 router.route("/register").post(
@@ -42,5 +42,4 @@ router.route("/update-avatar").patch(verifyJWT, upload.single("avatar"), updateU
 router.route("/update-coverImage").patch(verifyJWT, upload.single("coverImage"), updateUserCover)
 router.route("/channel/:username").get(verifyJWT, getUserChannelProfile) //here cause in the getUserChannelProfile we using req.params we need to focus on route that it contains username like this to use it later.
 router.route("/watch-history").get(verifyJWT, getWatchHistory)//user is not sending anything so we just use get
-
 export default router
