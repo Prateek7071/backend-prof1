@@ -6,48 +6,54 @@ import mongoose from "mongoose";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
-  const { channelId } = req.params
+
+  const { channelId } = req.params;
+
   if (!channelId) {
-    throw new ApiError(400,"channelId required")
+    throw new ApiError(400, "channelId required");
   }
- 
-    const subscriberId = req.user?._id
 
-    if (channelId.toString().trim() === subscriberId.toString().trim()) {
-      throw new ApiError(422, "Subscription not possible")
-    }
+  const subscriberId = req.user?._id;
 
-    const isSubscriber = await Subscription.findOne({
-        subscriber: subscriberId,
-        channel: channelId
-    })
+  if (channelId.toString().trim() === subscriberId.toString().trim()) {
+    throw new ApiError(422, "Subscription not possible");
+  }
 
-    if (isSubscriber) {
-      await Subscription.findByIdAndDelete(isSubscriber?._id)
-    }
+  const isSubscriber = await Subscription.findOne({
+    subscriber: subscriberId,
+    channel: channelId,
+  });
 
-    let newSubscriber=""
-    
-    if (!isSubscriber) {
-      newSubscriber = await Subscription.create({
-        subscriber: subscriberId,
-        channel: channelId
-      })
+  if (isSubscriber) {
+    await Subscription.findByIdAndDelete(isSubscriber?._id);
+  }
+
+  let newSubscriber = "";
+
+  if (!isSubscriber) {
+    newSubscriber = await Subscription.create({
+      subscriber: subscriberId,
+      channel: channelId,
+    });
 
     if (!newSubscriber) {
-      throw new ApiError(500, "Failed to subscribe")
+      throw new ApiError(500, "Failed to subscribe");
     }
-    }
+  }
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, {
-      subscribed: !isSubscriber,
-      data: newSubscriber
-    } ,isSubscriber?"Unsubscribed":"Subscribed" ))
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        subscribed: !isSubscriber,
+        data: newSubscriber,
+      },
+      isSubscriber ? "Unsubscribed" : "Subscribed"
+    )
+  );
 
   //alternative code, cause added indexing to both and unique
-  
+
   // try {
   //   await Subscription.create({ subscriber, channel })
   // } catch (err) {
@@ -60,7 +66,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   const { channelId } = req.params
-  
+
   if (!channelId) {
     throw new ApiError(400, "Channel doesnt exist");
   }
@@ -156,9 +162,10 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, subscribed,"Fetched subscribed channels list"))
 })
+
 export {
   toggleSubscription,
   getUserChannelSubscribers,
   getSubscribedChannels
-  
+
 }
