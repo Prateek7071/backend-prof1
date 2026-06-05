@@ -163,3 +163,8 @@ const videoComments = await Comment.aggregate([
 
 
   but we can beautify using pipeline what we need as output and thats what is done in the comment.controller.js file
+
+  ## aggregate things
+
+  -- using $push when using array instaead of $set as it would just override everything 
+  -- using $addToSet instead of $push to deal with duplicates
