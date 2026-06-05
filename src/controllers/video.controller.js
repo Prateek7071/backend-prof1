@@ -1,14 +1,38 @@
+import mongoose from "mongoose"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { Video } from "../models/video.models.js"
 import { uploadOnCloudinary,uploadVideoOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js"
 
-//TODO
+//TODO: get all videos based on query, sort, pagination
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-    //TODO: get all videos based on query, sort, pagination
-    
+ 
+  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+
+  if (!userId) {
+    throw new ApiError(400, "User not found")
+  }
+  const pageNumber = parseInt(page, 10)
+  const limitNumber = parseInt(limit,10)
+  const options = {
+    page: pageNumber,
+    limit: limitNumber,
+    sort: {[sortBy||"createdAt"]:sortType === "desc"? -1:1}
+  }
+  const pipeline = []
+  pipeline.push({ $match: { owner: new mongoose.Types.ObjectId(userId) } })
+
+  if (query) {
+    pipeline.push({ $match: { title: { $regex: query, $options: 'i' } } })
+  }
+
+  const newAggregate = Video.aggregate(pipeline)
+
+  const videos = await Video.aggregatePaginate(newAggregate, options)
+
+  return res.status(200).json(new ApiResponse(200, videos, "Retrieved all user videos"))
+  
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
