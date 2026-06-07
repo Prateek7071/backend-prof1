@@ -179,7 +179,6 @@ const deleteVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video id not found")
   }
   
-  console.log("CloudVideo: ", cloudVideo)
   
   // #approach 1
   // const deletedVideo = await Video.findByIdAndDelete(videoId)

@@ -9,7 +9,7 @@ import jwt from "jsonwebtoken"
 const generateAccessAndRefereshTokens = async (userId)=>{
   try { 
 
-    const user = await User.findOne(userId)
+    const user = await User.findOne({ _id: userId })
     const accessToken = user.generateAccessToken()
     const refreshToken = user.generateRefreshToken()
 

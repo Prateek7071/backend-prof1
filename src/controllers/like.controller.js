@@ -16,7 +16,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     likedBy: req.user?._id
   })
 
-  const likedVideo = null
+  let likedVideo = null
   if (!isLiked) {
     likedVideo = await Like.create({
         video: videoId,
@@ -42,7 +42,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     likedBy: req.user?._id
   })
 
-  const likedComment = null
+  let likedComment = null
   if (!isLiked) {
     likedComment = await Like.create({
         comment: commentId,
@@ -68,7 +68,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     likedBy: req.user?._id
   })
 
-  const likedTweet = null
+  let likedTweet = null
   if (!isLiked) {
     likedTweet = await Like.create({
         tweet: tweetId,
