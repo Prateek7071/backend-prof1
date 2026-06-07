@@ -28,7 +28,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     await Subscription.findByIdAndDelete(isSubscriber?._id);
   }
 
-  let newSubscriber = "";
+  let newSubscriber = null;
 
   if (!isSubscriber) {
     newSubscriber = await Subscription.create({
@@ -80,7 +80,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: "users",
-        localField: "channel",
+        localField: "subscriber",
         foreignField: "_id",
         as: "SubscribedUserDetails",
         pipeline: [{
@@ -99,7 +99,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     {
       $project: {
         _id: 0,
-        channelId: "$SubscribedUserDetails._id",
+        subscriberId: "$SubscribedUserDetails._id",
         fullname: "$SubscribedUserDetails.fullname",
         username: "$SubscribedUserDetails.username",
         avatar: "$SubscribedUserDetails.avatar",
@@ -151,7 +151,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     {
       $project: {
         _id: 0,
-        subscriberId: "$subscribedChannelsDetails._id",
+        channelId: "$subscribedChannelsDetails._id",
         fullname: "$subscribedChannelsDetails.fullname",
         username: "$subscribedChannelsDetails.username",
         avatar: "$subscribedChannelsDetails.avatar",
