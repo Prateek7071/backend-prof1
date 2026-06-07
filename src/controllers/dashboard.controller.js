@@ -83,7 +83,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
     {
       $group: {
         _id: null,
-        totalVidoes: { $sum: 1 },
+        totalVideos: { $sum: 1 },
         totalViews: { $sum: "$views" },
         totalLikes: { $sum: { $size: "$likes" } }
       }
@@ -93,20 +93,20 @@ const getChannelStats = asyncHandler(async (req, res) => {
   const totalSubs = await Subscription.countDocuments({channel: channelId})
 
   const stats = {
-    totalVidoes: videoStats[0]?.totalVidoes || 0,
+    totalVidoes: videoStats[0]?.totalVideos || 0,
     totalViews: videoStats[0]?.totalViews || 0,
     totalLikes: videoStats[0]?.totalLikes || 0,
     totalSubs
   }
   
-  console.log(stats[0])
+  console.log(stats)
   return res.status(200).json(new ApiResponse(200, stats, "Stats retrieved"))
 })
 
 
 const getChannelVideos = asyncHandler(async (req, res) => {
 
-  const channelId = new mongoose.Types.ObjectId(req?.user._id)
+  const channelId = new mongoose.Types.ObjectId(req.user?._id)
 
   if (!channelId) {
     throw new ApiError(400, "Channel not found")
@@ -115,7 +115,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
   const allVideos = await Video.aggregate([
     {
       $match: {
-        owner: new mongoose.Types.ObjectId(req?.user._id)
+        owner: new mongoose.Types.ObjectId(req.user?._id)
       },
     },
     {

@@ -121,13 +121,15 @@ const updateComment = asyncHandler(async (req, res) => {
   if (!isAuthorised) {
     throw new ApiError(403,"Not authorised to update comment")
   }
-  let updatedComment=""
-  if (isAuthorised) {
-    updatedComment = await Comment.findByIdAndUpdate(
-      commentId , {
+  let updatedComment = await Comment.findOneAndUpdate({
+    _id: commentId,
+    owner: req.user?._id
+  },
+  {
         $set: { content }
-    }) 
-  }
+  },{
+    returnDocument: "after"
+  }) 
 
   if (!updatedComment) {
     throw new ApiError(500,"cant update comment")
@@ -143,15 +145,13 @@ const deleteComment = asyncHandler(async (req, res) => {
     throw new ApiError(400,"Comment doesnt exist")
   }
  
-  const isAuthorised = await Comment.findOne({
+  const deletedComment = await Comment.findOneAndDelete({
     owner: req.user?._id,
     _id: commentId
   })
-  if (!isAuthorised) {
+  
+  if (!deletedComment) {
     throw new ApiError(403,"Not authorised to delete comment")
-  }
-  if (isAuthorised) {
-    await Comment.findByIdAndDelete(commentId)
   }
 
   return res.status(200).json(new ApiResponse(200, {},"Comment deleted successfully"))
