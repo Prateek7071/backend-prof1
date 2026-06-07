@@ -172,7 +172,6 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200,state,"Publish state updated"))
 })
 
-//TODO: implement deletion on cloudinary
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params
 
