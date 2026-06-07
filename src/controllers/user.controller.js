@@ -1,6 +1,7 @@
+import mongoose from "mongoose"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js"
 import { User } from "../models/user.models.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
@@ -252,7 +253,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   try { 
     
     const user = await User.findById(req.user?._id)
-    const isPasswordCorrect = await isPasswordCorrect(oldPassword)
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
   
     if (!isPasswordCorrect) {
       throw new ApiError(400, "invalid old password")
@@ -310,7 +311,15 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     if (!avatar) {
       throw new ApiError("Error uploading avatar on cloudinary ")
     }
-  
+
+    const fullUser = await User.findById(req.user?._id)
+
+    const cloudResponse = await deleteFromCloudinary(fullUser.avatarPublicId)
+
+    if (!cloudResponse || cloudResponse.result !== 'ok') {
+         throw new ApiError(500, "Failed to delete avatar file from cloud storage");
+      }
+    
     const user = await User.findByIdAndUpdate(req.user?._id, {
       $set: {
         avatar: avatar.secure_url,
@@ -320,7 +329,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
       returnDocument: 'after'
     }).select("-password")
     
-    // TODO : delete the old existing avatar image 
+    
     return res
       .status(200)
       .json(new ApiResponse(200, user, "Avatar updated successfully"))
@@ -342,7 +351,15 @@ const updateUserCover = asyncHandler(async (req, res) => {
     if (!coverImage) {
       throw new ApiError("Error uploading cover image on cloudinary ")
     }
-  
+
+    const fullUser = await User.findById(req.user?._id)
+
+    const cloudResponse = await deleteFromCloudinary(fullUser.coverPublicId)
+
+    if (!cloudResponse || cloudResponse.result !== 'ok') {
+         throw new ApiError(500, "Failed to delete cover image file from cloud storage");
+      }
+    
     const user = await User.findByIdAndUpdate(req.user?._id, {
       $set: {
         coverImage: coverImage.secure_url,
