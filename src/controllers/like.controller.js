@@ -16,17 +16,14 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     likedBy: req.user?._id
   })
 
-  const likedVideo=""
+  const likedVideo = null
   if (!isLiked) {
     likedVideo = await Like.create({
-      $set: {
         video: videoId,
         likedBy: req.user?._id
-      }
     })
-  }
-  if (isLiked) {
-    await Like.findByIdAndDelete(isLiked?._id)
+  } else {
+     await Like.findByIdAndDelete(isLiked?._id)
   }
 
   return res.
@@ -45,16 +42,13 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     likedBy: req.user?._id
   })
 
-  const likedComment=""
+  const likedComment = null
   if (!isLiked) {
     likedComment = await Like.create({
-      $set: {
         comment: commentId,
         likedBy: req.user?._id
-      }
     })
-  }
-  if (isLiked) {
+  }else{
     await Like.findByIdAndDelete(isLiked?._id)
   }
 
@@ -74,16 +68,13 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     likedBy: req.user?._id
   })
 
-  const likedTweet = ""
+  const likedTweet = null
   if (!isLiked) {
     likedTweet = await Like.create({
-      $set: {
         tweet: tweetId,
         likedBy: req.user?._id
-      }
     })
-  }
-  if (isLiked) {
+  }else{
     await Like.findByIdAndDelete(isLiked?._id)
   }
 
@@ -101,7 +92,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
       }
     },
     {
-      sort: {createdAt:-1}
+      $sort: {createdAt:-1}
     },
     {
       $lookup: {
@@ -109,29 +100,26 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         localField: "video",
         foreignField: "_id",
         as: "videoDetails",
-
-        pipeline: [
-          {
-            $unwind: "$videoDetails"
-          },
-          {
-            $project: {
-              createdAt: 1,
-              updatedAt: 1,
-              VideoCreatedAt: "$videoDetails.createdAt",
-              thumbnail: "$videoDetails.thumbnail",
-              title: "$videoDetails.title",
-              duration: "$videoDetails.duration",
-              views: "$videoDetails.views",
-              videoOwner: "$videoDetails.owner"
-            }
-          }
-        ]
+      }
+    },
+    {
+      $unwind: "$videoDetails"
+    },
+    {
+      $project: {
+        createdAt: 1,
+        updatedAt: 1,
+        VideoCreatedAt: "$videoDetails.createdAt",
+        thumbnail: "$videoDetails.thumbnail",
+        title: "$videoDetails.title",
+        duration: "$videoDetails.duration",
+        views: "$videoDetails.views",
+        videoOwner: "$videoDetails.owner"
       }
     }
   ])
 
-  if (!likedVideos) {
+  if (!likedVideos?.length) {
     throw new ApiError(500,"Cant retrieve liked videos")
   }
 
