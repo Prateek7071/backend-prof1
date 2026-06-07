@@ -197,7 +197,11 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Bad request")
   }
 
-  const playlist = await Playlist.findByIdAndUpdate(playlistId, {
+  const playlist = await Playlist.findOneAndUpdate({
+    _id: playlistId,
+    owner: req.user?._id
+  },
+  {
       $addToSet: {
         videos: videoId
       }
