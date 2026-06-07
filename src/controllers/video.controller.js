@@ -114,9 +114,12 @@ const updateVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400,"Fields are required")
   }
   try { 
+    
     let updateData = { title, description }
-    console.log("req.file: ",req.file)
+    console.log("req.file: ", req.file)
+    
     let thumbnailLocalPath;
+
     if (req.file) {
       thumbnailLocalPath = req.file.path
     }  
@@ -131,14 +134,21 @@ const updateVideo = asyncHandler(async (req, res) => {
     }
 
     console.log("thumbnail on cloudinary:", thumbnail)
-    
+
+    const videoBefore = await Video.findById(videoId)
     const video =await Video.findByIdAndUpdate(videoId, {
       $set: updateData
     },
     {
       returnDocument: 'after'
     })
-  
+
+    const cloudResponse = await deleteFromCloudinary(videoBefore.thumbnailPublicId)
+
+    if (!cloudResponse || cloudResponse.result !== 'ok') {
+         throw new ApiError(500, "Failed to delete video file from cloud storage");
+      }
+    
     return res
       .status(200)
       .json(new ApiResponse(200,video,"Updated video successfully"))
