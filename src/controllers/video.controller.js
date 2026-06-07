@@ -169,19 +169,27 @@ const deleteVideo = asyncHandler(async (req, res) => {
   if (!videoId) {
     throw new ApiError(400, "Video id not found")
   }
-  //TODO: implement deletion on cloudinary
-  const cloudVideo = await deleteFromCloudinary(videoId)
   
   console.log("CloudVideo: ", cloudVideo)
   
-  // if (cloudVideo.result !== "ok") {
-  //   throw new ApiError(500, "Failed to delete video from cloudinary")
-  // }
+  // #approach 1
+  // const deletedVideo = await Video.findByIdAndDelete(videoId)
+  
+  // const cloudVideo = await deleteFromCloudinary(deletedVideo.public_id)
+
+  //approach 2 delete from cloudinary then from db
+
+  const video = await Video.findById(videoId)
+
+  const cloudResponse = await deleteFromCloudinary(video.public_id)
+
+  if (!cloudResponse || cloudResponse.result !== 'ok') {
+       throw new ApiError(500, "Failed to delete video file from cloud storage");
+    }
 
   await Video.findByIdAndDelete(videoId)
-
-  return res.status(200).json(new ApiResponse(200, {}, "Deleted successfully"))
   
+  return res.status(200).json(new ApiResponse(200, {}, "Deleted successfully"))
 })
 
 export {
