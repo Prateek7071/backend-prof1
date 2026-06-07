@@ -41,8 +41,6 @@ const uploadVideoOnCloudinary = async (localFilePath) => {
   }
 }
 
-
-//TODO: Complete the following method to delete old existing avatar
 const deleteFromCloudinary = async(publicId) => {
   try { 
     if (!publicId) return null;
